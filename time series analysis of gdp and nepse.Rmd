@@ -1,0 +1,62 @@
+---
+title: "Time Series Analysis of GDP and NEPSE Index"
+author: "Roshan Rai"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    number_sections: yes
+    toc: yes
+    code_folding: hide
+    toc_float: yes
+    fig_height: 6
+---
+<style type="text/css">
+
+td {  /* Table  */
+  font-size: 16px;
+}
+h1.title {
+  font-size: 38px;
+  color: DarkRed;
+}
+h1 { /* Header 1 */
+  font-size: 34px;
+  color: Black;
+  font-family: "Times New Roman", Times, serif;
+}
+h2 { /* Header 2 */
+    font-size: 30px;
+  color: Black;
+  font-family: "Times New Roman", Times, serif;
+}
+h3 { /* Header 3 */
+  font-size: 24px;
+  font-family: "Times New Roman", Times, serif;
+  color: Black;
+}
+body {
+    color: black;
+    font-size: 18px;
+    font-family: 'Times New Roman';
+    }
+code.r{ /* Code block */
+    font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 14px;
+}
+</style>
+
+```{r message = FALSE, warning = FALSE}
+pacman::p_load(dplyr, tidyverse, ggplot2, readr, xts, forecast, tseries, TSstudio, tinytex)
+```
+
+# Time Series Analysis
+
+Time series analysis is a specific way of analyzing a sequence of data points collected over an interval of time. It requires a large number of data points to ensure consistency and reliability (Source: [_Tableau.com_](https://www.tableau.com/learn/articles/time-series-analysis)). It considers that data points over a period of time may have autocorrelation or seasonal variation. The purpose of time series analysis is to understand the structure of time series data and to fit a model for forecasting. It can be used in economic forecasting, stock market analysis, sales forecasting, return projections. Different methods like Autoregression (AR), Moving Average (MR), Autoregressive Moving Average (ARMA), Autoregressive integrated Moving Average (ARIMA), Seasonal Autoregressive Integrated Moving Average (SARIMA) can be used for forecasting. Here, I will be using ARIMA model for forecasting the NEPSE index and GDP of Nepal.
+
+## Autoregressive Integrated Moving Average Model (ARIMA)
+
+
+
+
