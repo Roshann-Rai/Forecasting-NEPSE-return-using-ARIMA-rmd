@@ -56,10 +56,46 @@ Time series analysis is a specific way of analyzing a sequence of data points co
 
 ## **ARIMA Model**
 
-ARIMA stands for Autoregressive Integrated Moving Average is model for forecasting time series data by making the time series into stationary. The condition for ARIMA model is that the time series data must be stationary which can be made by differencing. The ARIMA model is:
+ARIMA stands for Autoregressive Integrated Moving Average is model for forecasting time series data by making the time series into stationary. The condition for ARIMA model is that the time series data must be stationary which can be made by differencing. A non seasonal ARIMA model is defined as **ARIMA(p,d,q)** model where; **p** is the number of autoregressive terms, **d** is the number of non seasonal differences needed for stationarity and **q** is the number of lagged forecast errors in the prediction equation. The ARIMA model is:
 
 **Predicted Yt = Constant + Linear Combination Lags of Y (upto p lags) + Linear Combination of Lagged Forecast errors (upto q lags)**
 $$Y_t = \alpha + \beta_1Y_{t-1}+\beta_2Y_{t-2}+...+\beta_pY_{1-p}\epsilon_t+\phi_1\epsilon_{t-1}+\phi_2\epsilon_{t-2}+...\phi_q\epsilon_{t-q}$$
-where,<br> \(Y_{t-1}\) is the lag1 of the series, <br> \(\beta_1\) is the coefficient of autoregressive model for lag 1 that the model estimate, and \(\alpha\) is the constant.<br> Similarly, \(\epsilon_{t-1}\) is the error term for lag 1 and \(\phi_1\) is the coefficient of moving average model for lag 1.
- 
+where,<br> \(Y_{t-1}\) is the lag1 of the series, <br> \(\beta_1\) is the coefficient of autoregressive model for lag 1 that the model estimate, and \(\alpha\) is the constant.<br> Similarly, \(\epsilon_{t-1}\) is the error term for lag 1 and \(\phi_1\) is the coefficient of moving average model for lag 1.<br>
 
+If \(d = 0: y_t = Y_t\)<br>
+If \(d = 1: y_t = Y_t - Y_{t-1}\)<br>
+If \(d = 2: y_t = (Y_t - Y_{t-1}) - (Y_{t-1} - Y_{t-2})\)<br>
+
+## **NEPSE index and GDP data**
+
+For the time series analysis, I have used the GDP data from 1960 to 2021. The data can be obtained from [_Worldbank_](https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=NP). For forecasting the NEPSE index, I have used the daily NEPSE index from February 2014 to Mid-September 2022. The daily NEPSE indices have been aggregated to determine the monthly average NEPSE index for the time period. The daily NEPSE index data is obtained from [_Merolagani_](https://merolagani.com/Indices.aspx). My focus was to perform the time series analysis of NEPSE index and GDP data of Nepal. However, I also wanted to look how the GDP growth rate and NEPSE annual return are related. Hence, I have also looked at the correlation coefficient between these two variables.
+
+```{r, echo = FALSE}
+#Importing datasets
+nepse <- read.csv("https://raw.githubusercontent.com/Roshann-Rai/Time-series-analysis-of-GDP-and-NEPSE-data/master/nepse.csv")
+gdp_growth_rate <- read.csv("https://raw.githubusercontent.com/Roshann-Rai/Time-series-analysis-of-GDP-and-NEPSE-data/master/gdp_growth_rate_np.csv")
+nepse_2022_2014_daily_returns <- read.csv("https://raw.githubusercontent.com/Roshann-Rai/Time-series-analysis-of-GDP-and-NEPSE-data/master/nepse_index_2022_2014.csv")
+gdp <- read_csv("https://raw.githubusercontent.com/Roshann-Rai/Time-series-analysis-of-GDP-and-NEPSE-data/master/gdp.csv", show_col_types = F)
+```
+
+```{r gdp_cleaned, echo = FALSE}
+#Lets clean the gdp_growth_rate dataset
+gdp_cleaned <- gdp_growth_rate %>%
+  rename(growth_rate = gdp) %>%             #renaming the gdp column in growth_rate
+  mutate(growth_rate = as.numeric(gsub("%", '', growth_rate)))            #removing the % character and converting the growth rate column into numeric
+```
+
+```{r gdp_1997_2022, echo = FALSE}
+year = c(2022)
+growth_rate = c(4.1)
+gdp_2022 <- data.frame(year, growth_rate)
+gdp_1997_2022 <- rbind(gdp_cleaned, gdp_2022)
+```
+
+```{r nepse_2022_2014_daily_returns, echo = FALSE}
+#Cleaning the nepse_2022_2014_daily_returns datasets
+nepse_2022_2014 <- nepse_2022_2014_daily_returns %>%
+  mutate(date = as.character(date, format = "%d/%m/%Y"),
+         nepse_index = as.numeric(gsub(",", "", nepse_index))) %>%     #removing , from the nepse_index column and converting into numeric format
+  filter(date < "30/02/2014")      #filtering indexes before 2020/01/01
+```
