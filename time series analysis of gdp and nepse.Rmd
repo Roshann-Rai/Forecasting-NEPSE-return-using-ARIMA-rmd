@@ -4,9 +4,7 @@ author: "Roshan Rai"
 date: "`r Sys.Date()`"
 output:
   html_document:
-    number_sections: yes
     toc: yes
-    code_folding: hide
     toc_float: yes
     fig_height: 6
 ---
@@ -23,6 +21,7 @@ h1 { /* Header 1 */
   font-size: 34px;
   color: Black;
   font-family: "Times New Roman", Times, serif;
+  bold: TRUE;
 }
 h2 { /* Header 2 */
     font-size: 30px;
@@ -36,27 +35,31 @@ h3 { /* Header 3 */
 }
 body {
     color: black;
-    font-size: 18px;
+    font-size: 22px;
     font-family: 'Times New Roman';
     }
 code.r{ /* Code block */
-    font-size: 12px;
+    font-size: 14px;
 }
 pre { /* Code block - determines code spacing between lines */
     font-size: 14px;
 }
 </style>
 
-```{r message = FALSE, warning = FALSE}
+```{r message = FALSE, warning = FALSE, echo = FALSE}
 pacman::p_load(dplyr, tidyverse, ggplot2, readr, xts, forecast, tseries, TSstudio, tinytex)
 ```
 
-# Time Series Analysis
+# **Time Series Analysis**
 
 Time series analysis is a specific way of analyzing a sequence of data points collected over an interval of time. It requires a large number of data points to ensure consistency and reliability (Source: [_Tableau.com_](https://www.tableau.com/learn/articles/time-series-analysis)). It considers that data points over a period of time may have autocorrelation or seasonal variation. The purpose of time series analysis is to understand the structure of time series data and to fit a model for forecasting. It can be used in economic forecasting, stock market analysis, sales forecasting, return projections. Different methods like Autoregression (AR), Moving Average (MR), Autoregressive Moving Average (ARMA), Autoregressive integrated Moving Average (ARIMA), Seasonal Autoregressive Integrated Moving Average (SARIMA) can be used for forecasting. Here, I will be using ARIMA model for forecasting the NEPSE index and GDP of Nepal.
 
-## Autoregressive Integrated Moving Average Model (ARIMA)
+## **ARIMA Model**
 
+ARIMA stands for Autoregressive Integrated Moving Average is model for forecasting time series data by making the time series into stationary. The condition for ARIMA model is that the time series data must be stationary which can be made by differencing. The ARIMA model is:
 
-
+**Predicted Yt = Constant + Linear Combination Lags of Y (upto p lags) + Linear Combination of Lagged Forecast errors (upto q lags)**
+$$Y_t = \alpha + \beta_1Y_{t-1}+\beta_2Y_{t-2}+...+\beta_pY_{1-p}\epsilon_t+\phi_1\epsilon_{t-1}+\phi_2\epsilon_{t-2}+...\phi_q\epsilon_{t-q}$$
+where,<br> \(Y_{t-1}\) is the lag1 of the series, <br> \(\beta_1\) is the coefficient of autoregressive model for lag 1 that the model estimate, and \(\alpha\) is the constant.<br> Similarly, \(\epsilon_{t-1}\) is the error term for lag 1 and \(\phi_1\) is the coefficient of moving average model for lag 1.
+ 
 
