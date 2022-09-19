@@ -36,7 +36,7 @@ h3 { /* Header 3 */
 body {
     color: black;
     font-size: 22px;
-    font-family: 'Times New Roman';
+    font-family: 'Cambria';
     }
 code.r{ /* Code block */
     font-size: 14px;
@@ -50,12 +50,12 @@ pre { /* Code block - determines code spacing between lines */
 options(warn = -1)
 options(scipen = 10000)
 options(repr.plot.width = 14.8, repr.plot.height = 7.2)
-pacman::p_load(dplyr, tidyverse, ggplot2, readr, xts, forecast, tseries, TSstudio, tinytex)
+pacman::p_load(dplyr, tidyverse, ggplot2, readr, xts, forecast, tseries, TSstudio, tinytex, plotly, DT)
 ```
 
 # **Time Series Analysis**
 
-Time series analysis is a specific way of analyzing a sequence of data points collected over an interval of time. It requires a large number of data points to ensure consistency and reliability (Source: [_Tableau.com_](https://www.tableau.com/learn/articles/time-series-analysis)). It considers that data points over a period of time may have autocorrelation or seasonal variation. The purpose of time series analysis is to understand the structure of time series data and to fit a model for forecasting. It can be used in economic forecasting, stock market analysis, sales forecasting, return projections. Different methods like Autoregression (AR), Moving Average (MR), Autoregressive Moving Average (ARMA), Autoregressive integrated Moving Average (ARIMA), Seasonal Autoregressive Integrated Moving Average (SARIMA) can be used for forecasting. Here, I will be using ARIMA model for forecasting the NEPSE index and GDP of Nepal.
+Time series analysis is a specific way of analyzing a sequence of data points collected over an interval of time. It requires a large number of data points to ensure consistency and reliability ([_Tableau.com_](https://www.tableau.com/learn/articles/time-series-analysis)). It considers that data points over a period of time may have autocorrelation or seasonal variation. The purpose of time series analysis is to understand the structure of time series data and to fit a model for forecasting. It can be used in economic forecasting, stock market analysis, sales forecasting, return projections. Different methods like Autoregression (AR), Moving Average (MR), Autoregressive Moving Average (ARMA), Autoregressive integrated Moving Average (ARIMA), Seasonal Autoregressive Integrated Moving Average (SARIMA) can be used for forecasting. Here, I will be using ARIMA model for forecasting the NEPSE index and GDP of Nepal.
 
 ## **ARIMA Model**
 
@@ -119,13 +119,31 @@ gdp_nepal$date <- as.Date(paste(gdp_nepal$date, 12, 31, sep = "/"))
 gdp_nepal_ts <- xts(gdp_nepal$gdp, order.by = gdp_nepal$date)
 ```
 
-### GDP {.tabset}
+### **GDP** {.tabset}
 #### Plot
 ```{r gdp_plot, echo = FALSE}
-plot(gdp_nepal_ts, type = "o", pch = 20, cex.axis = 1.3, main = "GDP from 1960-2021", col = "red", grid.col = FALSE)
+gdp_plot <- plot_ly(gdp_nepal, x = ~date) %>%
+  add_trace(y = ~gdp, type = "scatter", mode = "lines+markers", line = list(shape = "linear", color = "rgb(10,12,240)", dash = "dash"), marker = list(symbol = "circles", color = "rgb(17, 157, 255)", size = 6), connectgaps = TRUE) %>%
+  layout(title = list(text = "GDP of Nepal",
+                      font = "Cambria",
+                      size  = 16),
+         xaxis = list(title = "Year"),
+         yaxis = list(title = "In Billions Rs.", showline = F),
+         plot_bgcolor = "white")
+gdp_plot
+  
 ```
 
 #### Table
 ```{r gdp_table, echo = FALSE}
-gdp_nepal_ts
+gdp_reshaped %>%
+  select(year, gdp) %>%
+    datatable(
+    rownames = F,
+    fillContainer = T,
+    option = list(bPaginate = F, pageLength = 10),
+    class = "cell-border stripe",
+    colnames = c("Year", "GDP in billion Rs."),
+    caption = "Table 1: GDP of Nepal in Rs. Billion"
+  )
 ```
