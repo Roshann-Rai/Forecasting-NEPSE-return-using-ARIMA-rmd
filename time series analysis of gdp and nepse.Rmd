@@ -119,14 +119,13 @@ gdp_nepal$date <- as.Date(paste(gdp_nepal$date, 12, 31, sep = "/"))
 gdp_nepal_ts <- xts(gdp_nepal$gdp, order.by = gdp_nepal$date)
 ```
 
-### **GDP** {.tabset}
+### **GDP of Nepal** {.tabset}
 #### Plot
 ```{r gdp_plot, echo = FALSE}
 gdp_plot <- plot_ly(gdp_nepal, x = ~date) %>%
   add_trace(y = ~gdp, type = "scatter", mode = "lines+markers", line = list(shape = "linear", color = "rgb(10,12,240)", dash = "dash"), marker = list(symbol = "circles", color = "rgb(17, 157, 255)", size = 6), connectgaps = TRUE) %>%
   layout(title = list(text = "GDP of Nepal",
-                      font = "Cambria",
-                      size  = 16),
+                      font = list(family = "Droid Sans Mono", size = 18, xanchor = "right")),
          xaxis = list(title = "Year"),
          yaxis = list(title = "In Billions Rs.", showline = F),
          plot_bgcolor = "white")
@@ -137,13 +136,13 @@ gdp_plot
 #### Table
 ```{r gdp_table, echo = FALSE}
 gdp_reshaped %>%
-  select(year, gdp) %>%
-    datatable(
+  mutate(gdp_b = gdp/1000000000) %>%
+  select(year, gdp_b) %>%
+  datatable(
     rownames = F,
-    fillContainer = T,
-    option = list(bPaginate = F, pageLength = 10),
     class = "cell-border stripe",
     colnames = c("Year", "GDP in billion Rs."),
-    caption = "Table 1: GDP of Nepal in Rs. Billion"
+    caption = "Table 1: GDP of Nepal in Rs. Billion",
+    options = list(columnDefs = list(list(className = "dt-center", targets = 0:1)))
   )
 ```
