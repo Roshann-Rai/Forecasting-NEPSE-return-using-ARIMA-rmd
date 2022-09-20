@@ -6,7 +6,8 @@ output:
   html_document:
     toc: yes
     toc_float: yes
-    fig_height: 6
+    fig_height: 5
+    fig_width: 9
 ---
 <style type="text/css">
 
@@ -18,24 +19,24 @@ h1.title {
   color: DarkRed;
 }
 h1 { /* Header 1 */
-  font-size: 34px;
+  font-size: 30px;
   color: Black;
   font-family: "Times New Roman", Times, serif;
   bold: TRUE;
 }
 h2 { /* Header 2 */
-    font-size: 28px;
+    font-size: 24px;
   color: Black;
   font-family: "Times New Roman", Times, serif;
 }
 h3 { /* Header 3 */
-  font-size: 24px;
+  font-size: 20px;
   font-family: "Times New Roman", Times, serif;
   color: Black;
 }
 body {
     color: black;
-    font-size: 22px;
+    font-size: 18px;
     font-family: 'Cambria';
     }
 code.r{ /* Code block */
@@ -47,9 +48,6 @@ pre { /* Code block - determines code spacing between lines */
 </style>
 
 ```{r message = FALSE, warning = FALSE, echo = FALSE}
-options(warn = -1)
-options(scipen = 10000)
-options(repr.plot.width = 16.8, repr.plot.height = 6.2)
 pacman::p_load(dplyr, tidyverse, ggplot2, readr, xts, forecast, tseries, TSstudio, tinytex, plotly, DT, ggplotly)
 ```
 
@@ -299,8 +297,8 @@ return_rate <- gdp_nepse_return_df %>%
 return_rate_plot <- ggplot() +
   geom_point(return_rate, mapping = aes(x = year, y = gdp_growth_rate), color = "#1930A6", alpha = 0.9) +
   geom_point(return_rate, mapping = aes(x = year, y = nepse_annual_return), color = "#E00D19", alpha = 0.9) +
-  geom_line(return_rate, mapping = aes(x = year, y = gdp_growth_rate), color = "#1930A6", size = 0.7, alpha = 0.6) +
-  geom_line(return_rate, mapping = aes(x = year, y = nepse_annual_return), color = "#E00D19", size = 0.7, alpha = 0.6) +
+  geom_line(return_rate, mapping = aes(x = year, y = gdp_growth_rate), color = "#AEB8EE", size = 0.7, alpha = 0.6) +
+  geom_line(return_rate, mapping = aes(x = year, y = nepse_annual_return), color = "#FCA3A8", size = 0.7, alpha = 0.6) +
   labs(title = "GDP growth rate and NEPSE annual Return",
        y = "In Percentage",
        x = "") +
@@ -337,38 +335,36 @@ I have used ARIMA model to forecast the GDP of Nepal. For forecasting, I have us
 
 ### **Test of Stationarity**
 A stationary time series is one whose mean and variance don't change with time. Thus, time series with trends, or with seasonality, are not stationary. While, a white noise series is stationary ([_Towardsdatascience_](https://towardsdatascience.com/stationarity-assumption-in-time-series-data-67ec93d0f2f)).
-```{r, class.source = "bg-danger", class.output = "bg.warning"}
+```{r, echo = F, class.output = "bg.warning"}
 #Test of Stationarity
 adf.test(gdp_nepal_ts, k = 15)
 ```
 At lag = 15, p-value from Augmented Dickey-Fuller test is 0.99 which is greater than \(\alpha\)=0.05 at 95% confidence interval. This suggests that null hypothesis is accepted i.e. the time series data is not stationary.
-```{r, class.source = "bg-danger"}
+```{r, echo = F, class.source = "bg-danger", fig.height = 4, fig.width = 6}
 #Forecasting GDP
 #Plotting acf and pacf
-par(mfrow = c(1,2))
-acf(gdp_nepal_ts)
-pacf(gdp_nepal_ts)
+acf(gdp_nepal_ts, main = "ACF") 
+pacf(gdp_nepal_ts, main = "PACF") 
 ```
 
 Looking at the **acf** and **pacf** plot, we can see the vertical lines crossing the **blue** horizontal line is substantial. This supports the **adf test**. 
 
 ### **ARIMA Model**
-```{r,  class.source = "bg-danger", class.output = "bg.warning"}
+```{r,  echo = F, class.source = "bg-danger", class.output = "bg.warning"}
 #Creating the model using auto.arima()
 model <- auto.arima(gdp_nepal_ts, ic="aic", trace = T)
 model
 ```
 
-### ***Test of Stationarity of the model***
-```{r, class.source = "bg-danger", class.output = "bg.warning"}
+### **Test of Stationarity of the model**
+```{r, echo = F, class.source = "bg-danger", class.output = "bg.warning", fig.height = 4, fig.width = 6}
 #Has the model been stationary?
-par(mfrow = c(1,2))
 acf(ts(model$residuals))
 pacf(ts(model$residuals))
 ```
 
 ### **Forecasting**
-```{r, class.source = "bg-danger", class.output = "bg.warning"}
+```{r, echo =F, class.source = "bg-danger", class.output = "bg.warning"}
 #Lets forecast the gdp for next 10 years at 95% confidence interval
 gdp_forecast <- forecast(model, level = c(95), h = 10)
 gdp_forecast
