@@ -103,7 +103,7 @@ nepse_2022_2014 <- nepse_2022_2014_daily_index %>%
   filter(date < "30/02/2014")      #filtering indexes before 2020/01/01
 ```
 
-```{r gdp_nepal_ts, echo = FALSE}
+```{r wide to long, echo = FALSE}
 #Wide to long
 gdp_reshaped <- gather(gdp, key = "year", value = "gdp", 2:63)
 
@@ -122,21 +122,6 @@ gdp_nepal_ts <- xts(gdp_nepal$gdp, order.by = gdp_nepal$date)
 ### **GDP of Nepal** {.tabset}
 #### Plot
 ```{r gdp_plot, echo = FALSE}
-# gdp_plot <- plot_ly(gdp_reshaped, x = ~year) %>%
-#   add_trace(y = ~gdp, type = "scatter", mode = "lines+markers", line = list(shape = "linear", color = "rgb(10,12,240)", dash = "dash"), marker = list(symbol = "circles", color = "rgb(17, 157, 255)", size = 6), connectgaps = TRUE) %>%
-#   layout(title = list(text = "GDP of Nepal",
-#                       font = list(family = "Droid Sans Mono", 
-#                                   size = 18, 
-#                                   xanchor = "right")),
-#          xaxis = list(title = "Year", 
-#                       zerolinecolor = "#ffff", 
-#                       zerolinewidth = 2, 
-#                       gridcolor = "ffff"),
-#          yaxis = list(title = "In Billions Rs.", 
-#                       zerolinecolor = "#ffff", 
-#                       zerolinewidth = 2, 
-#                       gridcolor = "ffff"),
-#          plot_bgcolor = "#e5ecf6")
 # gdp_plot
 gdp_plot <- gdp_reshaped %>%
   select(year, gdp) %>%
@@ -238,7 +223,101 @@ nepse_1997_2014_ts <- nepse_1997_2019_ts["1997/2014",]
 nepse_ts <- rbind(nepse_1997_2014_ts, nepse_2015_2022_ts)
 ```
 
+#### Plot
+```{r nepse_df, echo = F}
+#Creating gdp_nepse_df
+nepse_df <- as.data.frame(nepse_ts)
+
+#Naming the column date
+nepse_df$year <- rownames(nepse_df)    # Convert row names to column
+rownames(nepse_df) <- NULL           # Reset row names
+
+#plotting nepse_df
+nepse_plot <- nepse_df %>%
+  mutate(index = V1,
+         year = as.Date(year)) %>%
+  ggplot(aes(year, index)) +
+ geom_point(size = 1.5, alpha = 0.8, color = "#E00D19") +
+  geom_line(linetype = 1, size = 0.9, alpha = 0.9, color = "#FCA3A8") +
+  labs(title = "NEPSE Index",
+       subtitle = "From 1997 - 2022",
+       x = "",
+       y = "Index",
+       caption = "Source: Merolagani") +
+  scale_y_continuous(breaks = c(500, 1000, 1500, 2000, 2500, 3000)) +
+  theme_bw(base_size = 15)
+ggplotly(nepse_plot)
+```
+
+#### Table
+```{r nepse_table, echo = F}
+nepse_df %>%
+  mutate(index = V1) %>%
+  select(year, index) %>%
+  datatable(
+    rownames = F,
+    class = "cell-border stripe",
+    colnames = c("Year", "Index"),
+    caption = "Table 1: NEPSE Yearly Index",
+    options = list(columnDefs = list(list(className = "dt-center", targets = 0:1)))
+  )
+```
+
+### **GDP growth and NEPSE return** {.tabset}
+```{r, yearly_return, echo = F}
+#Yearly return on nepse 
+return_annual <- (round(diff(log(nepse_ts))[-1,], digit = 4))*100
+```
+
+#### Plot
+```{r, gdp_nepse xts, echo = F}
+#Formatting year column of gdp_1997_2022 as character
+gdp_1997_2022$year <- as.character(gdp_1997_2022$year)
+
+#Formatting year column of gdp_1997_2022 as date
+gdp_1997_2022$year <- paste(gdp_1997_2022$year, 12, 31, sep = "/")
+gdp_ts <- xts(gdp_1997_2022$growth_rate, order.by = as.Date(gdp_1997_2022$year))
 
 
+#merge gdp and nepse xts objects
+nepse_gdp_ts <- merge.xts(gdp_ts, return_annual)[-1,]
 
+#Creating gdp_nepse_return_df
+gdp_nepse_return_df <- as.data.frame(nepse_gdp_ts)
 
+#Naming the column date
+gdp_nepse_return_df$year <- rownames(gdp_nepse_return_df)    # Convert row names to column
+rownames(gdp_nepse_return_df) <- NULL           # Reset row names
+
+#Plotting gdp growth rate and nepse return
+return_rate <- gdp_nepse_return_df %>%
+  mutate(gdp_growth_rate = gdp_ts,
+         nepse_annual_return = return_annual,
+         year = as.Date(year)) %>%
+  select(year, gdp_growth_rate, nepse_annual_return)
+
+return_rate_plot <- ggplot() +
+  geom_point(return_rate, mapping = aes(x = year, y = gdp_growth_rate), color = "#1930A6", alpha = 0.9) +
+  geom_point(return_rate, mapping = aes(x = year, y = nepse_annual_return), color = "#E00D19", alpha = 0.9) +
+  geom_line(return_rate, mapping = aes(x = year, y = gdp_growth_rate), color = "#1930A6", size = 0.7, alpha = 0.6) +
+  geom_line(return_rate, mapping = aes(x = year, y = nepse_annual_return), color = "#E00D19", size = 0.7, alpha = 0.6) +
+  labs(title = "GDP growth rate and NEPSE annual Return",
+       y = "In Percentage",
+       x = "") +
+  scale_x_date(date_labels = "%Y", date_breaks = "5 years") +
+  theme_bw(base_size = 14)
+
+ggplotly(return_rate_plot)
+```
+
+#### Table
+```{r gdp_growth and nepse return, echo = F}
+return_rate %>%
+    datatable(
+    rownames = F,
+    class = "cell-border stripe",
+    colnames = c("Year", "GDP growth rate", "NEPSE Annual Return"),
+    caption = "Table 1: NEPSE Yearly Index",
+    options = list(columnDefs = list(list(className = "dt-center", targets = 0:1)))
+  )
+```
