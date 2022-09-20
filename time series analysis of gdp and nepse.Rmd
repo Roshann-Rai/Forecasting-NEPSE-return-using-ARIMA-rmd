@@ -50,7 +50,7 @@ pre { /* Code block - determines code spacing between lines */
 options(warn = -1)
 options(scipen = 10000)
 options(repr.plot.width = 14.8, repr.plot.height = 7.2)
-pacman::p_load(dplyr, tidyverse, ggplot2, readr, xts, forecast, tseries, TSstudio, tinytex, plotly, DT)
+pacman::p_load(dplyr, tidyverse, ggplot2, readr, xts, forecast, tseries, TSstudio, tinytex, plotly, DT, ggplotly)
 ```
 
 # **Time Series Analysis**
@@ -122,15 +122,37 @@ gdp_nepal_ts <- xts(gdp_nepal$gdp, order.by = gdp_nepal$date)
 ### **GDP of Nepal** {.tabset}
 #### Plot
 ```{r gdp_plot, echo = FALSE}
-gdp_plot <- plot_ly(gdp_nepal, x = ~date) %>%
-  add_trace(y = ~gdp, type = "scatter", mode = "lines+markers", line = list(shape = "linear", color = "rgb(10,12,240)", dash = "dash"), marker = list(symbol = "circles", color = "rgb(17, 157, 255)", size = 6), connectgaps = TRUE) %>%
-  layout(title = list(text = "GDP of Nepal",
-                      font = list(family = "Droid Sans Mono", size = 18, xanchor = "right")),
-         xaxis = list(title = "Year"),
-         yaxis = list(title = "In Billions Rs.", showline = F),
-         plot_bgcolor = "white")
-gdp_plot
-  
+# gdp_plot <- plot_ly(gdp_reshaped, x = ~year) %>%
+#   add_trace(y = ~gdp, type = "scatter", mode = "lines+markers", line = list(shape = "linear", color = "rgb(10,12,240)", dash = "dash"), marker = list(symbol = "circles", color = "rgb(17, 157, 255)", size = 6), connectgaps = TRUE) %>%
+#   layout(title = list(text = "GDP of Nepal",
+#                       font = list(family = "Droid Sans Mono", 
+#                                   size = 18, 
+#                                   xanchor = "right")),
+#          xaxis = list(title = "Year", 
+#                       zerolinecolor = "#ffff", 
+#                       zerolinewidth = 2, 
+#                       gridcolor = "ffff"),
+#          yaxis = list(title = "In Billions Rs.", 
+#                       zerolinecolor = "#ffff", 
+#                       zerolinewidth = 2, 
+#                       gridcolor = "ffff"),
+#          plot_bgcolor = "#e5ecf6")
+# gdp_plot
+gdp_plot <- gdp_reshaped %>%
+  select(year, gdp) %>%
+  mutate(year = as.numeric(year),
+         gdp = gdp/1000000000) %>%
+  ggplot(aes(year, gdp)) +
+ geom_point(size = 1.5, alpha = 0.8, color = "#1930A6") +
+  geom_line(linetype = 1, size = 0.9, alpha = 0.9, color = "#AEB8EE") +
+  labs(title = "GDP of Nepal",
+       subtitle = "From 1960 - 2021",
+       x = "",
+       y = "GDP in Billions Rs.",
+       caption = "Source: World Bank") +
+  scale_x_continuous(breaks = c(1960, 1970, 1980, 1990, 2000, 2010, 2020)) +
+  theme_bw(base_size = 15)
+ggplotly(gdp_plot)
 ```
 
 #### Table
@@ -146,3 +168,77 @@ gdp_reshaped %>%
     options = list(columnDefs = list(list(className = "dt-center", targets = 0:1)))
   )
 ```
+
+### **NEPSE Index** {.tabset}
+
+```{r xts objects for Nepse, echo = FALSE}
+#Converting the nepse_2022_2019 dataframe in xts 
+nepse_2022_2014_ts <- xts(nepse_2022_2014$nepse_index, order.by = as.POSIXct(nepse_2022_2014$date, format = "%d/%m/%Y"))
+```
+
+```{r monthly return, echo = FALSE}
+#Monthly return
+nepse_2014_2022_monthly <- apply.monthly(nepse_2022_2014_ts, FUN = mean)
+```
+
+```{r yearly avg return, echo = FALSE}
+#Extract nepse index for 2015
+nepse_2015_ts <- nepse_2022_2014_ts["2015",]
+nepse_2015 <- round(mean(apply.yearly(nepse_2015_ts, FUN = mean)), digit = 2)
+
+#Extract nepse index for 2016
+nepse_2016_ts <- nepse_2022_2014_ts["2016",]
+nepse_2016 <- round(mean(apply.yearly(nepse_2016_ts, FUN = mean)), digit = 2)
+
+#Extract nepse index for 2017
+nepse_2017_ts <- nepse_2022_2014_ts["2017",]
+nepse_2017 <- round(mean(apply.yearly(nepse_2022_2014_ts, FUN = mean)), digit = 2)
+
+#Extract nepse index for 2018
+nepse_2018_ts <- nepse_2022_2014_ts["2018",]
+nepse_2018 <- round(mean(apply.yearly(nepse_2018_ts, FUN = mean)), digit = 2)
+
+#Extract nepse index for 2019
+nepse_2019_ts <- nepse_2022_2014_ts["2019",]
+nepse_2019 <- round(mean(apply.yearly(nepse_2019_ts, FUN = mean)), digit = 2)
+
+#Extract nepse index for 2020
+nepse_2020_ts <- nepse_2022_2014_ts["2020",]
+nepse_2020 <- round(mean(apply.yearly(nepse_2020_ts, FUN = mean)), digit = 2)
+
+#Extract nepse index for 2021
+nepse_2021_ts <- nepse_2022_2014_ts["2021",]
+nepse_2021 <- round(mean(apply.yearly(nepse_2021_ts, FUN = mean)), digit = 2)
+
+#Extract nepse index for 2022
+nepse_2022_ts <- nepse_2022_2014_ts["2022",]
+nepse_2022 <- round(mean(apply.yearly(nepse_2022_ts, FUN = mean)), digit = 2)
+```
+
+```{r nepse_2015_2022, echo = F}
+#Creating a new dataframe
+year <- c("2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022")
+nepse_index <- c("1028.88", "1539.43", "1553.74", "1261.82", "1192.81", "1523.69", "2700.05", "2314.07")
+nepse_2015_2022 <- data.frame(year, nepse_index)
+
+#Format year column as date
+nepse_2015_2022$year <- as.Date(paste(nepse_2015_2022$year, 12, 31, sep = "/"))
+
+#Creating time series object
+nepse_2015_2022_ts <- xts(as.numeric(nepse_2015_2022$nepse_index), order.by = nepse_2015_2022$year)
+
+#Converting year column of nepse dataframe into date format
+nepse$year <- as.Date(paste(nepse$year, 12, 31, sep = "/"))
+
+#converting nepse dataframe into xts object
+nepse_1997_2019_ts <- xts(nepse$nepse_index, order.by = nepse$year)
+nepse_1997_2014_ts <- nepse_1997_2019_ts["1997/2014",]
+
+#Merging the xts objects
+nepse_ts <- rbind(nepse_1997_2014_ts, nepse_2015_2022_ts)
+```
+
+
+
+
+
