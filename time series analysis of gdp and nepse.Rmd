@@ -48,7 +48,7 @@ pre { /* Code block - determines code spacing between lines */
 </style>
 
 ```{r message = FALSE, warning = FALSE, echo = FALSE}
-pacman::p_load(dplyr, tidyverse, ggplot2, readr, xts, forecast, tseries, TSstudio, tinytex, plotly, DT, ggplotly)
+pacman::p_load(dplyr, tidyverse, ggplot2, readr, xts, forecast, tseries, TSstudio, tinytex, plotly, DT, ggplotly, patchwork)
 ```
 
 # **Time Series Analysis**
@@ -256,7 +256,7 @@ nepse_df %>%
     rownames = F,
     class = "cell-border stripe",
     colnames = c("Year", "Index"),
-    caption = "Table 1: NEPSE Yearly Index",
+    caption = "Table 2: NEPSE Yearly Index",
     options = list(columnDefs = list(list(className = "dt-center", targets = 0:1)))
   )
 ```
@@ -315,7 +315,7 @@ return_rate %>%
     rownames = F,
     class = "cell-border stripe",
     colnames = c("Year", "GDP growth rate", "NEPSE Annual Return"),
-    caption = "Table 1: NEPSE Yearly Index",
+    caption = "Table 3: GDP Growth Rate and NEPSE Index Returns",
     options = list(columnDefs = list(list(className = "dt-center", targets = 0:1)))
   )
 ```
@@ -343,13 +343,15 @@ At lag = 15, p-value from Augmented Dickey-Fuller test is 0.99 which is greater 
 ```{r, echo = F, class.source = "bg-danger", fig.height = 4, fig.width = 6}
 #Forecasting GDP
 #Plotting acf and pacf
-acf(gdp_nepal_ts, main = "ACF") 
-pacf(gdp_nepal_ts, main = "PACF") 
+acf(gdp_nepal_ts, main = "ACF", xlim = c(1,20)) 
+pacf(gdp_nepal_ts, main = "PACF", xlim = c(1,20)) 
 ```
 
 Looking at the **acf** and **pacf** plot, we can see the vertical lines crossing the **blue** horizontal line is substantial. This supports the **adf test**. 
 
 ### **ARIMA Model**
+
+Using the Akaike Information Criterion (AIC) for evaluating the ARIMA model, the best ARIMA model is ARIMA(2,2,1). AIC is the mathematical method for evaluating how well a model fits the data it was generated from. Among the ARIMA models generated, ARIMA(2,2,1) has the lowest AIC value i.e. 2662.796. In this model p = 2 which is the AR term, d = 2 is the number of differencing needed and q = 1 is the MA term.The coefficients of AR1, AR2 and MA1 are 0.0781, -0.3977 and -0.7538 respectively.
 ```{r,  echo = F, class.source = "bg-danger", class.output = "bg.warning"}
 #Creating the model using auto.arima()
 model <- auto.arima(gdp_nepal_ts, ic="aic", trace = T)
@@ -357,16 +359,34 @@ model
 ```
 
 ### **Test of Stationarity of the model**
+Plotting the **acf** and **pacf** plots of the residuals of the model show that the number of verticle lines crossing the horizontal blue lines have reduced significantly indicating the stationarity of the time series model.
 ```{r, echo = F, class.source = "bg-danger", class.output = "bg.warning", fig.height = 4, fig.width = 6}
 #Has the model been stationary?
-acf(ts(model$residuals))
-pacf(ts(model$residuals))
+acf(ts(model$residuals), xlim = c(1,20))
+pacf(ts(model$residuals), xlim = c(1,20))
 ```
 
 ### **Forecasting**
-```{r, echo =F, class.source = "bg-danger", class.output = "bg.warning"}
+Using the ARIMA(2,2,1) model, I have made the forecasting of GDP for next 10 years at confidence interval of 95%.
+```{r, echo =F}
 #Lets forecast the gdp for next 10 years at 95% confidence interval
 gdp_forecast <- forecast(model, level = c(95), h = 10)
-gdp_forecast
+
+#Creating the dataframe for predictions
+year <- c(seq(2022, 2031, by=1))
+Point_forecast <- c(39.12, 40.91, 42.34, 44.31, 46.40, 48.28, 50.09, 51.99, 53.91, 55.82)
+Low_95 <- c(37.36, 37.68, 38.35, 39.58, 40.73, 41.57, 42.35, 43.19, 43.99, 44.73)
+High_95 <- c(41.26, 44.15, 46.32, 49.04, 52.08, 54.99, 57.84, 60.79, 63.84, 66.91)
+gdp_forecast_10 <- data.frame(year, Point_forecast, Low_95, High_95)
+
+#Creating table
+gdp_forecast_10 %>%
+    datatable(
+    rownames = F,
+    class = "cell-border stripe",
+    colnames = c("Year", "Point Forecast", "Low 95%", "High 95%"),
+    caption = "Table 4: Forecasted GDP in Billions Rs.",
+    options = list(columnDefs = list(list(className = "dt-center", targets = 0:1)))
+  )
 plot(gdp_forecast)
 ```
