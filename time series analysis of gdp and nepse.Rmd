@@ -5,7 +5,8 @@ date: "`r Sys.Date()`"
 output:
   html_document:
     toc: yes
-    toc_float: yes
+    toc_float:
+      collapsed: false
     fig_height: 4.5
     fig_width: 8
 ---
@@ -17,10 +18,11 @@ td {  /* Table  */
 h1.title {
   font-size: 38px;
   color: DarkRed;
+  bold: TRUE;
 }
 h1 { /* Header 1 */
   font-size: 30px;
-  color: Black;
+  color: "#900C3F";
   font-family: "Times New Roman", Times, serif;
   bold: TRUE;
 }
@@ -330,10 +332,11 @@ cor_return_rate <- return_rate %>%
 cor <- cor(cor_return_rate, method = "pearson")
 ```
 
-## **Forecasting GDP**
+## **Forecasting**{.tabset}
+### **Forecasting GDP**
 I have used ARIMA model to forecast the GDP of Nepal. For forecasting, I have used the GDP data from 1960 - 2021.
 
-### **Test of Stationarity**
+#### **Test of Stationarity**
 A stationary time series is one whose mean and variance don't change with time. Thus, time series with trends, or with seasonality, are not stationary. While, a white noise series is stationary ([_Towardsdatascience_](https://towardsdatascience.com/stationarity-assumption-in-time-series-data-67ec93d0f2f)).
 ```{r, echo = F, class.output = "bg.warning"}
 #Test of Stationarity
@@ -349,7 +352,7 @@ pacf(gdp_nepal_ts, main = "PACF", xlim = c(1,20))
 
 Looking at the **acf** and **pacf** plot, we can see the vertical lines crossing the **blue** horizontal line is substantial. This supports the **adf test**. 
 
-### **ARIMA Model**
+#### **ARIMA Model**
 
 Using the Akaike Information Criterion (AIC) for evaluating the ARIMA model, the best ARIMA model is ARIMA(2,2,1). AIC is the mathematical method for evaluating how well a model fits the data it was generated from. Among the ARIMA models generated, ARIMA(2,2,1) has the lowest AIC value i.e. 2662.796. In this model p = 2 which is the AR term, d = 2 is the number of differencing needed and q = 1 is the MA term.The coefficients of AR1, AR2 and MA1 are 0.0781, -0.3977 and -0.7538 respectively.
 ```{r,  echo = F, class.source = "bg-danger", class.output = "bg.warning"}
@@ -358,7 +361,7 @@ model <- auto.arima(gdp_nepal_ts, ic="aic", trace = T)
 model
 ```
 
-### **Test of Stationarity of the model**
+#### **Test of Stationarity of the model**
 Plotting the **acf** and **pacf** plots of the residuals of the model show that the number of verticle lines crossing the horizontal blue lines have reduced significantly indicating the stationarity of the time series model.
 ```{r, echo = F, class.source = "bg-danger", class.output = "bg.warning", fig.height = 4, fig.width = 6}
 #Has the model been stationary?
@@ -366,7 +369,7 @@ acf(ts(model$residuals), xlim = c(1,20))
 pacf(ts(model$residuals), xlim = c(1,20))
 ```
 
-### **Forecasting**
+#### **Forecasting**
 Using the ARIMA(2,2,1) model, I have made the forecasting of GDP for next 10 years at confidence interval of 95%.
 ```{r, echo =F}
 #Lets forecast the gdp for next 10 years at 95% confidence interval
@@ -391,10 +394,12 @@ gdp_forecast_10 %>%
 plot(gdp_forecast)
 ```
 
-## **Forecasting NEPSE Index**
+### **Forecasting NEPSE Index**
 For forecasting the NEPSE index, I have used the daily NEPSE index data from February 2014 to September 2022 which is aggregated for average monthly index during the period. The NEPSE index has been forecasted using the ARIMA model similar to above.
 
-### **Test of Stationarity**
+#### **Test of Stationarity**
+The Augmented Dickey-Fuller test at the lag of 15 gives the p-value 0.429 which is much greater than \(\alpha\)=0.05 at 95% confidence interval. Hence, it supports that the null hypothesis is accepted i.e. the time series data is stationarity.<br>
+Similarly, **acf** and **pacf** plots have significant number of vertical lines crossing the blue horizontal line. This also supports the result of adf test.
 ```{r, echo = F}
 #Testing stationarity
 adf.test(nepse_2014_2022_monthly, k = 15)
@@ -405,13 +410,16 @@ acf(nepse_2014_2022_monthly)
 pacf(nepse_2014_2022_monthly)
 ```
 
+#### **Model**
+Using the **auto.arima()** function, the best model is ARIMA(2,1,2) for which the AIC is 1255.602. For this model p = 2 is the AR term, d = 1 is the number of differencing required and q = 2 is the MA term. The coefficients of AR1, AR2, MA1 and MA2 are -0.0734, -0.604, 0.1496 and 0.8870.
 ```{r, echo = F}
 #Creating the model using auto.arima()
 model_nepse <- auto.arima(nepse_2014_2022_monthly, ic="aic", trace = T)
 model_nepse
 ```
 
-### **Test of Stationarity test for model's residuals**
+#### **Test of Stationarity test for model's residuals**
+The **acf** and **pacf** plots have very minimum number of vertical lines crossing the blue horizontal lines indicating the stationarity of the model.
 ```{r, echo = F}
 #Has the model been stationary?
 par(mfrow = c(1,2))
@@ -419,10 +427,33 @@ acf(ts(model_nepse$residuals))
 pacf(ts(model_nepse$residuals))
 ```
 
-### **Forecasting**
-```{r, forecast, echo = F}
+#### **Forecasting**
+For forecasting the NEPSE index, I have used the daily NEPSE index from February 2014 to September 2022 from which average monthly NEPSE index has been calculated. Similar to GDP forecasting, I have used the ARIMA model and forecasted the NEPSE index for next 12 months.
+
+```{r, echo = F}
 #Lets forecast the gdp for next 10 years at 95% confidence interval
 nepse_forecast <- forecast(model_nepse, level = c(95), h = 12)
-nepse_forecast
+
+#Creating the dataframe for predictions
+Month <- c("2022 October", "2022 November", "2022 December", "2023 January", "2023 February", "2023 March", "2023 April", "2023 May", "2023 June", "2023 July", "2023 August", "2023 September")
+Point_forecast <- c(1974.362, 1923.131, 1909.147, 1941.116, 1947.215, 1927.458, 1925.225, 1937.322, 1937.782, 1930.442, 1930.703, 1935.118)
+Low_95 <- c(1758.375, 1605.838, 1477.696, 1427.844, 1379.376, 1305.349, 1245.239, 1207.073, 1164.448, 1114.447, 1072.126, 1037.162)
+High_95 <- c(2190.350, 2240.424, 2340.597, 2454.389, 2515.054, 2549.566, 2605.212, 2667.572, 2711.117, 2746.437, 2789.280, 2833.073)
+nepse_forecast_10 <- data.frame(Month, Point_forecast, Low_95, High_95)
+
+# #Creating table
+nepse_forecast_10 %>%
+    datatable(
+    rownames = F,
+    class = "cell-border stripe",
+    colnames = c("Month", "Point Forecast", "Low 95%", "High 95%"),
+    caption = "Table 5: Forecasted NEPSE Index.",
+    options = list(columnDefs = list(list(className = "dt-center", targets = 0:1)))
+  )
+
 plot(nepse_forecast)
 ```
+## **Conclusion**
+ARIMA is found to be more effective especially for short term time series forecasting (Box 1970; Jarrett 1991). ARIMA model can increase the effectiveness of forecasting even with the minimum parameters. However, long term forecasting eventually goes to be straight line and it is poor at forecasting series with turning points.<br>
+This blog explains the basic of ARIMA model and presents the process to perform the time series forecasting using this model. For more information regarding ARIMA model, visit [_here_](https://otexts.com/fpp2/arima.html). My code for time series analysis can be found [_here_](https://github.com/Roshann-Rai/Time-series-analysis-of-GDP-and-NEPSE-data/blob/master/gdp_nepse_time_series_analysis.R).<br>
+Lastly all thanks to [_Code For Nepal_](https://codefornepal.org/) for providing me with opportunity to learn R.
