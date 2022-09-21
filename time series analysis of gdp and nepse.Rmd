@@ -6,8 +6,8 @@ output:
   html_document:
     toc: yes
     toc_float: yes
-    fig_height: 5
-    fig_width: 9
+    fig_height: 4.5
+    fig_width: 8
 ---
 <style type="text/css">
 
@@ -389,4 +389,40 @@ gdp_forecast_10 %>%
     options = list(columnDefs = list(list(className = "dt-center", targets = 0:1)))
   )
 plot(gdp_forecast)
+```
+
+## **Forecasting NEPSE Index**
+For forecasting the NEPSE index, I have used the daily NEPSE index data from February 2014 to September 2022 which is aggregated for average monthly index during the period. The NEPSE index has been forecasted using the ARIMA model similar to above.
+
+### **Test of Stationarity**
+```{r, echo = F}
+#Testing stationarity
+adf.test(nepse_2014_2022_monthly, k = 15)
+
+#Plotting acf and pacf
+par(mfrow = c(1,2))
+acf(nepse_2014_2022_monthly)
+pacf(nepse_2014_2022_monthly)
+```
+
+```{r, echo = F}
+#Creating the model using auto.arima()
+model_nepse <- auto.arima(nepse_2014_2022_monthly, ic="aic", trace = T)
+model_nepse
+```
+
+### **Test of Stationarity test for model's residuals**
+```{r, echo = F}
+#Has the model been stationary?
+par(mfrow = c(1,2))
+acf(ts(model_nepse$residuals))
+pacf(ts(model_nepse$residuals))
+```
+
+### **Forecasting**
+```{r, forecast, echo = F}
+#Lets forecast the gdp for next 10 years at 95% confidence interval
+nepse_forecast <- forecast(model_nepse, level = c(95), h = 12)
+nepse_forecast
+plot(nepse_forecast)
 ```
