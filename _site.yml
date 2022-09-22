@@ -1,0 +1,10 @@
+
+name: "Roshan Rai"
+navbar:
+  title: "My Blogs"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Blog"
+      href: Journal.html
+    output_dir: "docs"
