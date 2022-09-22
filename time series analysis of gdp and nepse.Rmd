@@ -453,6 +453,7 @@ nepse_forecast_10 %>%
 
 plot(nepse_forecast)
 ```
+
 ## **Conclusion**
 ARIMA is found to be more effective especially for short term time series forecasting (Box 1970; Jarrett 1991). ARIMA model can increase the effectiveness of forecasting even with the minimum parameters. However, long term forecasting eventually goes to be straight line and it is poor at forecasting series with turning points.<br>
 This blog explains the basic of ARIMA model and presents the process to perform the time series forecasting using this model. For more information regarding ARIMA model, visit [_here_](https://otexts.com/fpp2/arima.html). My code for time series analysis can be found [_here_](https://github.com/Roshann-Rai/Time-series-analysis-of-GDP-and-NEPSE-data/blob/master/gdp_nepse_time_series_analysis.R).<br>
