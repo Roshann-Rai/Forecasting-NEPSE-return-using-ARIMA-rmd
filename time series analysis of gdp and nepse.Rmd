@@ -336,6 +336,7 @@ cor <- cor(cor_return_rate, method = "pearson")
 ### **Forecasting GDP**
 I have used ARIMA model to forecast the GDP of Nepal. For forecasting, I have used the GDP data from 1960 - 2021.
 
+
 #### **Test of Stationarity**
 A stationary time series is one whose mean and variance don't change with time. Thus, time series with trends, or with seasonality, are not stationary. While, a white noise series is stationary ([_Towardsdatascience_](https://towardsdatascience.com/stationarity-assumption-in-time-series-data-67ec93d0f2f)).
 ```{r, echo = F, class.output = "bg.warning"}
@@ -352,6 +353,7 @@ pacf(gdp_nepal_ts, main = "PACF", xlim = c(1,20))
 
 Looking at the **acf** and **pacf** plot, we can see the vertical lines crossing the **blue** horizontal line is substantial. This supports the **adf test**. 
 
+
 #### **ARIMA Model**
 
 Using the Akaike Information Criterion (AIC) for evaluating the ARIMA model, the best ARIMA model is ARIMA(2,2,1). AIC is the mathematical method for evaluating how well a model fits the data it was generated from. Among the ARIMA models generated, ARIMA(2,2,1) has the lowest AIC value i.e. 2662.796. In this model p = 2 which is the AR term, d = 2 is the number of differencing needed and q = 1 is the MA term.The coefficients of AR1, AR2 and MA1 are 0.0781, -0.3977 and -0.7538 respectively.
@@ -360,6 +362,7 @@ Using the Akaike Information Criterion (AIC) for evaluating the ARIMA model, the
 model <- auto.arima(gdp_nepal_ts, ic="aic", trace = T)
 model
 ```
+
 
 #### **Test of Stationarity of the model**
 Plotting the **acf** and **pacf** plots of the residuals of the model show that the number of verticle lines crossing the horizontal blue lines have reduced significantly indicating the stationarity of the time series model.
@@ -397,6 +400,7 @@ plot(gdp_forecast)
 ### **Forecasting NEPSE Index**
 For forecasting the NEPSE index, I have used the daily NEPSE index data from February 2014 to September 2022 which is aggregated for average monthly index during the period. The NEPSE index has been forecasted using the ARIMA model similar to above.
 
+
 #### **Test of Stationarity**
 The Augmented Dickey-Fuller test at the lag of 15 gives the p-value 0.429 which is much greater than \(\alpha\)=0.05 at 95% confidence interval. Hence, it supports that the null hypothesis is accepted i.e. the time series data is stationarity.<br>
 Similarly, **acf** and **pacf** plots have significant number of vertical lines crossing the blue horizontal line. This also supports the result of adf test.
@@ -417,6 +421,7 @@ Using the **auto.arima()** function, the best model is ARIMA(2,1,2) for which th
 model_nepse <- auto.arima(nepse_2014_2022_monthly, ic="aic", trace = T)
 model_nepse
 ```
+
 
 #### **Test of Stationarity test for model's residuals**
 The **acf** and **pacf** plots have very minimum number of vertical lines crossing the blue horizontal lines indicating the stationarity of the model.
